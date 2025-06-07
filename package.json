@@ -1,0 +1,31 @@
+{
+  "name": "task-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Gdorogoy/task-tracker#readme",
+  "bugs": {
+    "url": "https://github.com/Gdorogoy/task-tracker/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gdorogoy/task-tracker.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/index",
+    "dev":"nodemon src/index.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
