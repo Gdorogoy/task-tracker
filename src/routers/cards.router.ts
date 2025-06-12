@@ -3,17 +3,18 @@ import { Card, GetCardsResponse, CreateCardRequest } from '../types/cards';
 import { IdParams } from '../types/common';
 import { CardsRepository } from '../database/cards-repository';
 import { randomUUID } from 'crypto';
+import { validateCardInput } from './validation/validate-card-inputs';
 
 
 export const cardsRouter=express.Router();
 const cardRepo=CardsRepository();
 
-cardsRouter.get('/', async (req : Request<{},{}> ,res : Response<GetCardsResponse>)=>{
+cardsRouter.get('/' ,async (req : Request<{},{}> ,res : Response<GetCardsResponse>)=>{
     const cards=await cardRepo.GetManyCards();
     res.send(cards).status(200);
 });
 
-cardsRouter.get('/:id',async (req : Request<IdParams,{}> ,res : Response<Card | string,{}>)=>{
+cardsRouter.get('/:id' ,async (req : Request<IdParams,{}> ,res : Response<Card | string,{}>)=>{
     const card=await cardRepo.GetCard(req.params.id);
     if(!card){
         res.sendStatus(404).send('Card Not Found');
@@ -23,7 +24,7 @@ cardsRouter.get('/:id',async (req : Request<IdParams,{}> ,res : Response<Card | 
 
 
 });
-cardsRouter.post('/',async (req : Request<{},Card,CreateCardRequest> ,res : Response<Card>)=>{
+cardsRouter.post('/',validateCardInput , async (req : Request<{},Card,CreateCardRequest> ,res : Response<Card>)=>{
     const card:Card={
         text:req.body.text,
         id:randomUUID()
@@ -34,7 +35,7 @@ cardsRouter.post('/',async (req : Request<{},Card,CreateCardRequest> ,res : Resp
     res.send(card).status(201);
 
 });
-cardsRouter.put('/:id',async(req : Request<IdParams,Card,CreateCardRequest> ,res : Response<Card>)=>{
+cardsRouter.put('/:id',validateCardInput ,async(req : Request<IdParams,Card,CreateCardRequest> ,res : Response<Card>)=>{
     const card:Card={
         id:req.params.id,
         text:req.body.text
@@ -44,7 +45,7 @@ cardsRouter.put('/:id',async(req : Request<IdParams,Card,CreateCardRequest> ,res
     res.send(card).status(203);
 
 });
-cardsRouter.delete('/:id',async (req : Request<IdParams> ,res : Response<void>)=>{
+cardsRouter.delete('/:id' , async (req : Request<IdParams> ,res : Response<void>)=>{
     await cardRepo.DeleteCard(req.params.id);
     res.sendStatus(204);
 });
