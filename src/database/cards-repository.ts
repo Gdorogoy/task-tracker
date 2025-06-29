@@ -5,28 +5,29 @@ export const CardsRepository=()=>{
     //Create
     const CreateCard= async (card:Card) :Promise<void> =>{
         await sqliteRun(`
-            INSERT INTO cards(id,text)
-            VALUES(?,?);
-            `,[card.id,card.text]);
+            INSERT INTO cards(id,text,columns_id)
+            VALUES(?,?,?);
+            `,[card.id,card.text,card.columnId]);
     }
     //Update
     const UpdateCard= async (card:Card) :Promise<void> =>{
         await sqliteRun(`
             UPDATE cards SET text = ?
-            WHERE id = ?;
-            `,[card.text,card.id]);
+            WHERE id =? AND columns_id = ?;
+            `,[card.text,card.id,card.columnId]);
     }
     //Delete
-    const DeleteCard= async (id:string) :Promise<void> =>{
+    const DeleteCard= async (id:string , columnId:string) :Promise<void> =>{
         await sqliteRun(`
-            DELETE FROM cards WHERE id = ?;
-            `,[id]);
+            DELETE FROM cards WHERE id = ? AND columns_id= ?;
+            `,[id,columnId]);
     }
     //GetOne
-    const GetCard= async (id:string) :Promise<Card | null> =>{
+    const GetCard= async (id:string, columnId:string) :Promise<Card | null> =>{
         const data=await sqliteGet(`
-            SELECT * FROM cards WHERE id = ?;
-            `,[id]);
+            SELECT id,name,columns_id AS "columnId" FROM cards 
+            WHERE id = ? AND columns_id = ?;
+            `,[id, columnId]);
 
         if( isCard(data)){
             return data;
@@ -35,12 +36,15 @@ export const CardsRepository=()=>{
         return null;
 
     }
+
+
     //GetMany
 
-    const GetManyCards= async () : Promise<Card[]> =>{
+    const GetManyCards= async (columnId : string) : Promise<Card[]> =>{
         const data=await sqliteAll(`
-            SELECT * FROM cards;
-            `);
+            SELECT id,name,columns_id AS "columnId" FROM cards 
+            WHERE board_id = ?;
+            `,[columnId]);
 
         if(!Array.isArray(data)){
             console.error(`'Unknown data format on GetMany ${data}'`)

@@ -1,23 +1,28 @@
+import { verifyJwt } from './middleware/jwt-guard';
 import express from 'express'
-import { ADMIN_LOGIN, ADMIN_PASSWORD, PORT } from './config';
+import {PORT } from './config';
 import { cardsRouter } from './routers/cards.router';
 import { CreateTables } from './database/create-tables';
-import basicAuth from 'express-basic-auth';
-import { logger } from './logger';
+import { logger} from './middleware/logger';
+import { boardRouter } from './routers/boards.router';
+import { columnsRouter } from './routers/columns.router';
+import { authRouter } from './auth/auth-router';
+import { CreateTablesAuth } from './auth/create-tables';
 
 const run = async (): Promise<void> => {
   await CreateTables(); 
-
+  await CreateTablesAuth();
 
   const server = express();
-  server.use(basicAuth({
-    users:{ [ADMIN_LOGIN ]: ADMIN_PASSWORD},
-    challenge: true
-  }));
+  
+
+  
   server.use(express.json());
   server.use(logger);
-  server.use('/cards', cardsRouter);
-
+  server.use('/auth',authRouter)
+  server.use('/boards', verifyJwt,boardRouter);
+  server.use('/boards/:boardId/columns', verifyJwt,columnsRouter);
+  server.use('/boards/:boardId/columns/:columnId/cards', verifyJwt,cardsRouter);
 
   server.listen(PORT, () => {
     console.log(`SERVER IS RUNNING ON PORT: ${PORT}`);

@@ -20,12 +20,16 @@
     "dev": "dotenv -- nodemon src/index.ts"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
     "express-basic-auth": "^1.2.1",
+    "jsonwebtoken": "^9.0.2",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.0",
     "dotenv-cli": "^8.0.0",
     "nodemon": "^3.1.10",

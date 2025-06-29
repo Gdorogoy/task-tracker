@@ -1,3 +1,3 @@
-import { Card } from "./cards/card";
+import { Card } from "./card";
 
 export type GetCardsResponse=Card[];
