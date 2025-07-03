@@ -42,7 +42,7 @@ authRouter.post("/register", async (req: Request<{}, {}, UserRegister>, res: Res
     }
 });
 
-authRouter.post("/login",async(req: Request<{},UserLogin>, res: Response ):Promise<void>=>{
+authRouter.post("/login",async(req: Request<{},{},UserLogin>, res: Response ):Promise<void>=>{
     if(!req.body.password || !req.body.username){
         res.status(400).json({message: "Username And Password Requierd."});
         return;
@@ -51,21 +51,21 @@ authRouter.post("/login",async(req: Request<{},UserLogin>, res: Response ):Promi
         const user: unknown= await authRepository.findByUserame(req.body.username);
         if(isUser(user)){
             if(await bcrypt.compare(req.body.password,user.password)){
-                const accsesToken=jwt.sign(
-                    {"username": user.username},
-                    SECRET,
-                    {expiresIn: '5m'}
-
+                const accessToken = jwt.sign(
+                { id: user.id, username: user.username },
+                SECRET,
+                { expiresIn: "5m" }
                 );
-                const refreshToken=jwt.sign(
-                    {"username": user.username},
-                    REFRESH_SECRET,
-                    {expiresIn: '12h'}
 
+                const refreshToken = jwt.sign(
+                { id: user.id, username: user.username },
+                REFRESH_SECRET,
+                { expiresIn: "12h" }
                 );
+
                 await authRepository.updateUserRefreshToken(user.id,user.username,refreshToken);
                 res.cookie('jwt',refreshToken,{httpOnly:true, maxAge:24*60*60*5000});
-                res.json({accsesToken});
+                res.json({accessToken});
             }
             else{
                 res.status(401).json({message: "Incorrect Password/Username"});
@@ -84,6 +84,16 @@ authRouter.post("/login",async(req: Request<{},UserLogin>, res: Response ):Promi
 
 });
 
+authRouter.post('/logout', async(req: Request<{ id: string, username: string }>,res:Response)=>{
+    const user=await authRepository.findById(req.params.id);
+    if(isUser(user)){
+        authRepository.updateUserRefreshToken(req.params.id,req.body.username,"");
+        res.status(200).json({message:`logout succses`});
+    }else{
+        res.status(404).json({ message: "User not found" });
+    }
+});
+
 authRouter.get("/refresh",async(req: Request<{}, {}, { refreshToken: string }>, res: Response)=>{
     const token = req.cookies.jwt;
     if(!token){
@@ -91,7 +101,7 @@ authRouter.get("/refresh",async(req: Request<{}, {}, { refreshToken: string }>, 
     }
 
     try{
-        const payload=jwt.verifyJwt(token,REFRESH_SECRET) as JwtPayload;
+        const payload=jwt.verify(token,REFRESH_SECRET) as JwtPayload;
         if(!payload.id){
             res.sendStatus(500).json({message:"Error in payload"});
         }
